@@ -28,8 +28,6 @@ Answer each question in 3 to 5 sentences. Be specific and honest about what actu
 
 Document at least 3 bugs you found. Add rows as needed.
 
-**Bug Reproduction Log**
-
 | # | Input Used | Expected Behavior | Actual Behavior | Console Error / Output | Suspected Code Location |
 |---|------------|-------------------|-----------------|------------------------|-------------------------|
 | 1 | Normal mode, before any guess | "Attempts left: 8" | "Attempts left: 7"; debug shows Attempts: 1 | none | `app.py` — `st.session_state.attempts = 1` (should start at 0) |
@@ -173,10 +171,9 @@ Claude first suggested adding FIXME comments for only the 3 bugs I planned to fi
 
 - **How did you decide whether a bug was really fixed?**
 
- I counted a bug as fixed only when two things were true: a pytest test targeting that bug passed, and I could no longer reproduce the bug in the live game using the same input from my Bug Reproduction Log. For example, for the backwards hints I guessed higher than the secret and confirmed the game now says "📉 Go LOWER!", and for New Game I [lost/won] a game, clicked New Game, and saw the score reset to 0 and the History list cleared.
+ I counted a bug as fixed only when two things were true: a pytest test targeting that bug passed, and I could no longer reproduce the bug in the live game using the same input from my Bug Reproduction Log. For example, for the backwards hints I guessed higher than the secret and confirmed the game now says "📉 Go LOWER!", and for New Game I won a game, clicked New Game, and saw the score reset to 0 and the History list cleared.
 
-- Describe at least one test you ran (manual or using pytest)  
-  and what it showed you about your code.
+- **Describe at least one test you ran (manual or using pytest) and what it showed you about your code.**
 
   `test_single_digit_guess_compared_as_number` checks that `check_guess(9, 79)` returns "Too Low." In the original code, a guess of 9 against a secret of 79 got "Too High" on even attempts because the secret was turned into a string and "9" > "79" as text. The test passing shows the comparison is now always numeric. Before my fixes, `python -m pytest` showed **3 failed** (NotImplementedError, because logic_utils.py was empty). After moving the logic and fixing it, all **19 tests pass**:
 
@@ -205,7 +202,7 @@ Claude first suggested adding FIXME comments for only the 3 bugs I planned to fi
 
   I also ran into a setup issue: plain `pytest` failed with `ModuleNotFoundError: No module named 'logic_utils'`, because pytest wasn't adding the project folder to Python's import path. Running `python -m pytest` instead fixed it.
 
-- Did AI help you design or understand any tests? How?
+- **Did AI help you design or understand any tests? How?**
 
   Yes. Claude generated the bug-fix tests and the edge-case tests (negative numbers, decimals, extremely large numbers, empty input, extra spaces, and the exact edges of the range). I read each one to make sure it matched a bug from my table and checked that the expected values made sense, for example that 1 and 20 are allowed on Easy but 0 and 21 are not. The edge cases also made me realize that inputs like "4.9" used to be silently cut to 4, which I hadn't noticed while playing.
 
@@ -213,7 +210,11 @@ Claude first suggested adding FIXME comments for only the 3 bugs I planned to fi
 
 ## 4. What did you learn about Streamlit and state?
 
-- How would you explain Streamlit "reruns" and session state to a friend who has never used Streamlit?
+- **How would you explain Streamlit "reruns" and session state to a friend who has never used Streamlit?**
+
+  Before this project I didn't know what Streamlit or session state were. Streamlit is a Python library that turns a Python script into a web page, and I learned that every time you click a button or change a setting, it reruns the entire script from top to bottom. That means normal variables reset on every click, so anything the game needs to remember, like the secret number, score, attempts, and guess history, has to be saved in `st.session_state`, which acts like the app's memory between reruns. 
+
+  The way I would explain to a friend would be: Imagine a whiteboard that gets completely erased and redrawn every time you touch it. Because of this, regular variables forget everything on each click. Session state (`st.session_state`) is like a notebook next to the whiteboard that doesn't get erased, so anything the app needs to remember between clicks has to be saved there.
 
 ---
 
@@ -221,5 +222,13 @@ Claude first suggested adding FIXME comments for only the 3 bugs I planned to fi
 
 - What is one habit or strategy from this project that you want to reuse in future labs or projects?
   - This could be a testing habit, a prompting strategy, or a way you used Git.
+
+I want to keep reproducing a bug and writing down the exact input, expected result, and actual result before trying to fix anything. Having the Bug Reproduction Log made it easy to check each fix later, because I could repeat the same input and see if the behavior changed. I also want to keep committing at milestones instead of all at once, since it shows the story of how the project changed.
+
 - What is one thing you would do differently next time you work with AI on a coding task?
+
+I would slow down and go one step at a time from the beginning. Early on, the AI was giving me several steps at once and I got lost, so I had to stop and ask it to go step by step. I would also question the AI's reasoning sooner: when I asked why Hard mode was set to 1–200 with 5 tries, the AI worked out that a perfect player would need 8 guesses for that range, which made me realize its suggestions are choices I can push back on, not facts. 
+
 - In one or two sentences, describe how this project changed the way you think about AI generated code.
+
+ AI-generated code can look finished and still be full of bugs. This game ran without crashing but had at least 11 problems. Now I see AI as a fast teammate that still needs a human in the loop to test, verify, and decide what to accept.
