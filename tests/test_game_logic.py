@@ -1,5 +1,8 @@
 from logic_utils import check_guess
 
+# FIXME: check_guess returns a tuple like ("Win", "🎉 Correct!"), but these tests compare to a plain string like "Win"
+
+
 def test_winning_guess():
     # If the secret is 50 and guess is 50, it should be a win
     result = check_guess(50, 50)
