@@ -1,0 +1,28 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.13.5, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\Solom\Desktop\ai110-module1show-gameglitchinvestigator-starter\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\Solom\Desktop\ai110-module1show-gameglitchinvestigator-starter
+plugins: anyio-4.15.1
+collecting ... collected 19 items
+
+tests/test_game_logic.py::test_winning_guess PASSED                      [  5%]
+tests/test_game_logic.py::test_guess_too_high PASSED                     [ 10%]
+tests/test_game_logic.py::test_guess_too_low PASSED                      [ 15%]
+tests/test_game_logic.py::test_too_high_hint_says_go_lower PASSED        [ 21%]
+tests/test_game_logic.py::test_too_low_hint_says_go_higher PASSED        [ 26%]
+tests/test_game_logic.py::test_single_digit_guess_compared_as_number PASSED [ 31%]
+tests/test_game_logic.py::test_same_guess_gives_same_result_every_time PASSED [ 36%]
+tests/test_game_logic.py::test_out_of_range_guess_rejected_on_easy PASSED [ 42%]
+tests/test_game_logic.py::test_non_numeric_input_rejected PASSED         [ 47%]
+tests/test_game_logic.py::test_wrong_guess_never_adds_points PASSED      [ 52%]
+tests/test_game_logic.py::test_first_try_win_scores_100 PASSED           [ 57%]
+tests/test_game_logic.py::test_hard_range_bigger_than_normal PASSED      [ 63%]
+tests/test_game_logic.py::test_negative_number_rejected PASSED           [ 68%]
+tests/test_game_logic.py::test_decimal_rejected_not_truncated PASSED     [ 73%]
+tests/test_game_logic.py::test_extremely_large_number_rejected PASSED    [ 78%]
+tests/test_game_logic.py::test_empty_input_rejected PASSED               [ 84%]
+tests/test_game_logic.py::test_whitespace_around_number_accepted PASSED  [ 89%]
+tests/test_game_logic.py::test_boundary_values PASSED                    [ 94%]
+tests/test_game_logic.py::test_win_score_never_below_10 PASSED           [100%]
+
+============================= 19 passed in 0.08s ==============================

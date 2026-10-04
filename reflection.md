@@ -150,18 +150,64 @@ FAILED tests/test_game_logic.py::test_guess_too_low - NotImplementedError: Refac
 
 ## 2. How did you use AI as a teammate?
 
-- Which AI tools did you use on this project (for example: ChatGPT, Gemini, Copilot)?
-- Give one example of an AI suggestion that was correct (including what the AI suggested and how you verified the result).
-- Give one example of an AI suggestion you did not accept as written (including what the AI suggested, why you rejected or changed it, and how you verified your version). It does not have to be a suggestion that was wrong: over-engineered, out of scope, harder to read, or a poor fit for this codebase all count.
+- **Which AI tools did you use on this project (for example: ChatGPT, Gemini, Copilot)?**
+
+I used Claude as my AI teammate. I pasted my files (app.py, the tests, reflection.md) into the chat and asked it to explain bugs, help refactor the logic into logic_utils.py, and generate pytest cases.
+
+- **AI explanation of a bug:**
+
+  When I saw the same guess of 9 get "Go HIGHER!" and then "Go LOWER!" with a secret of 79, Claude explained that app.py converts the secret to a string on every even attempt (`secret = str(st.session_state.secret)`). Comparing a number to a string raises a TypeError, so check_guess falls into its `except TypeError` block and compares text instead of numbers. Since "9" comes after "7" alphabetically, "9" > "79" is True, so the game called 9 "Too High."
+
+
+- **Give one example of an AI suggestion that was correct (including what the AI suggested and how you verified the result).**
+
+ Claude suggested changing check_guess to return only the outcome ("Win", "Too High", "Too Low") and moving the hint text into a separate function, get_hint_message. This was correct because the starter tests expected a plain string like "Win," but the original function returned a tuple, so the tests could never pass. Splitting them also made it easy to fix the swapped "Go HIGHER"/"Go LOWER" messages in one place. I verified it by running `python -m pytest`: the 3 starter tests went from 3 failed to 3 passed without changing them. I also played the game, guessed higher than the secret, and saw "Go LOWER!"
+
+- **Give one example of an AI suggestion you did not accept as written (including what the AI suggested, why you rejected or changed it, and how you verified your version). It does not have to be a suggestion that was wrong: over-engineered, out of scope, harder to read, or a poor fit for this codebase all count.**
+
+Claude first suggested adding FIXME comments for only the 3 bugs I planned to fix first. I changed that and asked it to mark all 11 bugs from my Bug Reproduction Log, because I wanted every bug in my table connected to the exact line of code causing it, so anyone reading the code could match them up. I verified it by checking that each FIXME was numbered to match my table and sat directly above the code it described, and that the game still ran the same afterward before I committed it.
 
 ---
 
 ## 3. Debugging and testing your fixes
 
-- How did you decide whether a bug was really fixed?
+- **How did you decide whether a bug was really fixed?**
+
+ I counted a bug as fixed only when two things were true: a pytest test targeting that bug passed, and I could no longer reproduce the bug in the live game using the same input from my Bug Reproduction Log. For example, for the backwards hints I guessed higher than the secret and confirmed the game now says "📉 Go LOWER!", and for New Game I [lost/won] a game, clicked New Game, and saw the score reset to 0 and the History list cleared.
+
 - Describe at least one test you ran (manual or using pytest)  
   and what it showed you about your code.
+
+  `test_single_digit_guess_compared_as_number` checks that `check_guess(9, 79)` returns "Too Low." In the original code, a guess of 9 against a secret of 79 got "Too High" on even attempts because the secret was turned into a string and "9" > "79" as text. The test passing shows the comparison is now always numeric. Before my fixes, `python -m pytest` showed **3 failed** (NotImplementedError, because logic_utils.py was empty). After moving the logic and fixing it, all **19 tests pass**:
+
+```
+  tests/test_game_logic.py::test_winning_guess PASSED
+  tests/test_game_logic.py::test_guess_too_high PASSED
+  tests/test_game_logic.py::test_guess_too_low PASSED
+  tests/test_game_logic.py::test_too_high_hint_says_go_lower PASSED
+  tests/test_game_logic.py::test_too_low_hint_says_go_higher PASSED
+  tests/test_game_logic.py::test_single_digit_guess_compared_as_number PASSED
+  tests/test_game_logic.py::test_same_guess_gives_same_result_every_time PASSED
+  tests/test_game_logic.py::test_out_of_range_guess_rejected_on_easy PASSED
+  tests/test_game_logic.py::test_non_numeric_input_rejected PASSED
+  tests/test_game_logic.py::test_wrong_guess_never_adds_points PASSED
+  tests/test_game_logic.py::test_first_try_win_scores_100 PASSED
+  tests/test_game_logic.py::test_hard_range_bigger_than_normal PASSED
+  tests/test_game_logic.py::test_negative_number_rejected PASSED
+  tests/test_game_logic.py::test_decimal_rejected_not_truncated PASSED
+  tests/test_game_logic.py::test_extremely_large_number_rejected PASSED
+  tests/test_game_logic.py::test_empty_input_rejected PASSED
+  tests/test_game_logic.py::test_whitespace_around_number_accepted PASSED
+  tests/test_game_logic.py::test_boundary_values PASSED
+  tests/test_game_logic.py::test_win_score_never_below_10 PASSED
+  ============================= 19 passed in 0.08s ==============================
+```
+
+  I also ran into a setup issue: plain `pytest` failed with `ModuleNotFoundError: No module named 'logic_utils'`, because pytest wasn't adding the project folder to Python's import path. Running `python -m pytest` instead fixed it.
+
 - Did AI help you design or understand any tests? How?
+
+  Yes. Claude generated the bug-fix tests and the edge-case tests (negative numbers, decimals, extremely large numbers, empty input, extra spaces, and the exact edges of the range). I read each one to make sure it matched a bug from my table and checked that the expected values made sense, for example that 1 and 20 are allowed on Easy but 0 and 21 are not. The edge cases also made me realize that inputs like "4.9" used to be silently cut to 4, which I hadn't noticed while playing.
 
 ---
 
