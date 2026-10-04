@@ -1,0 +1,46 @@
+﻿app.py:4:80: E501 line too long (82 > 79 characters)
+app.py:17:80: E501 line too long (82 > 79 characters)
+app.py:18:80: E501 line too long (82 > 79 characters)
+app.py:20:80: E501 line too long (87 > 79 characters)
+app.py:53:80: E501 line too long (85 > 79 characters)
+app.py:55:80: E501 line too long (88 > 79 characters)
+app.py:60:80: E501 line too long (80 > 79 characters)
+app.py:88:80: E501 line too long (80 > 79 characters)
+app.py:92:80: E501 line too long (84 > 79 characters)
+app.py:98:80: E501 line too long (83 > 79 characters)
+app.py:99:80: E501 line too long (81 > 79 characters)
+app.py:103:80: E501 line too long (82 > 79 characters)
+app.py:135:80: E501 line too long (91 > 79 characters)
+app.py:144:72: W292 no newline at end of file
+logic_utils.py:1:80: E501 line too long (89 > 79 characters)
+logic_utils.py:6:80: E501 line too long (85 > 79 characters)
+logic_utils.py:33:80: E501 line too long (92 > 79 characters)
+logic_utils.py:40:80: E501 line too long (86 > 79 characters)
+logic_utils.py:41:80: E501 line too long (82 > 79 characters)
+logic_utils.py:54:80: E501 line too long (87 > 79 characters)
+logic_utils.py:56:80: E501 line too long (86 > 79 characters)
+logic_utils.py:66:80: E501 line too long (88 > 79 characters)
+logic_utils.py:67:80: E501 line too long (86 > 79 characters)
+logic_utils.py:77:80: E501 line too long (88 > 79 characters)
+logic_utils.py:79:80: E501 line too long (80 > 79 characters)
+logic_utils.py:84:80: E501 line too long (85 > 79 characters)
+tests/test_game_logic.py:9:80: E501 line too long (86 > 79 characters)
+tests/test_game_logic.py:22:1: E302 expected 2 blank lines, found 1
+tests/test_game_logic.py:27:1: E302 expected 2 blank lines, found 1
+tests/test_game_logic.py:41:1: E302 expected 2 blank lines, found 1
+tests/test_game_logic.py:45:1: E302 expected 2 blank lines, found 1
+tests/test_game_logic.py:46:80: E501 line too long (81 > 79 characters)
+tests/test_game_logic.py:49:1: E302 expected 2 blank lines, found 1
+tests/test_game_logic.py:54:1: E302 expected 2 blank lines, found 1
+tests/test_game_logic.py:61:1: E302 expected 2 blank lines, found 1
+tests/test_game_logic.py:62:80: E501 line too long (86 > 79 characters)
+tests/test_game_logic.py:67:1: E302 expected 2 blank lines, found 1
+tests/test_game_logic.py:72:1: E302 expected 2 blank lines, found 1
+tests/test_game_logic.py:76:1: E302 expected 2 blank lines, found 1
+tests/test_game_logic.py:93:1: E302 expected 2 blank lines, found 1
+tests/test_game_logic.py:99:1: E302 expected 2 blank lines, found 1
+tests/test_game_logic.py:105:1: E302 expected 2 blank lines, found 1
+tests/test_game_logic.py:111:1: E302 expected 2 blank lines, found 1
+tests/test_game_logic.py:117:1: E302 expected 2 blank lines, found 1
+tests/test_game_logic.py:124:1: E302 expected 2 blank lines, found 1
+tests/test_game_logic.py:126:44: W292 no newline at end of file

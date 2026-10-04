@@ -55,21 +55,45 @@ I reviewed each generated test against my Bug Reproduction Log in `reflection.md
 
 > Document your use of AI for linting or code style improvements.
 
+AI assistant used: **Claude** | Linter: **flake8** (checks code against PEP 8, Python's official style guide)
+
 **Prompt used:**
 
 ```
-<!-- Paste the prompt you gave the AI -->
+Add professional docstrings (Args, Returns, Examples) to every function in
+logic_utils.py. Then review app.py, logic_utils.py, and tests/test_game_logic.py
+for PEP 8 compliance and fix every warning flake8 reports, without changing how
+the game works.
 ```
 
-**Linting output before:**
+**Linting output before** (`python -m flake8 app.py logic_utils.py tests/test_game_logic.py`, full list in `lint_before.txt`):
 
 ```
-<!-- Paste relevant linter warnings/errors -->
+app.py: 13 x E501 line too long, 1 x W292 no newline at end of file
+logic_utils.py: 12 x E501 line too long
+tests/test_game_logic.py: 3 x E501 line too long, 16 x E302 expected 2 blank lines, 1 x W292 no newline at end of file
+Total: 46 warnings
 ```
 
-**Changes applied:**
+**Linting output after** (saved in `lint_after.txt`):
 
-<!-- Describe what you changed based on the AI's suggestions -->
+```
+(no output - 0 warnings)
+```
+
+**Changes the AI suggested and which I applied:**
+
+| Warning | What it means | AI's suggested fix | Applied? |
+|---------|---------------|--------------------|----------|
+| E501 (line too long) | Lines over 79 characters | Split long `# FIX:` comments and code lines across multiple lines | ✅ Yes |
+| E302 (expected 2 blank lines) | Functions need 2 blank lines between them | Added 2 blank lines between every test function | ✅ Yes |
+| W292 (no newline at end of file) | Files should end with a newline | Added a final newline to `app.py` and the test file | ✅ Yes |
+| Docstrings | `logic_utils.py` had short or missing docstrings | Added full docstrings with Args, Returns, and Examples to all 5 functions | ✅ Yes |
+| Import order | Imports weren't grouped | Sorted imports alphabetically and separated Python's built-in `random` from third-party `streamlit` | ✅ Yes |
+
+Naming was already PEP 8 compliant (functions and variables use `snake_case`), so no renaming was needed.
+
+**How I verified it:** I ran flake8 again and got no output, ran `python -m pytest` (still 19 passed), and played the game to confirm nothing about how it works changed.
 
 ---
 

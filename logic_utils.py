@@ -1,10 +1,28 @@
-"""Core game logic for Game Glitch Investigator (kept separate from the Streamlit UI)."""
+"""Core game logic for Game Glitch Investigator.
+
+These functions hold the rules of the number-guessing game. They are kept
+separate from the Streamlit UI in ``app.py`` so they can be tested with
+pytest without running the app.
+"""
 
 
-def get_range_for_difficulty(difficulty: str):
-    """Return (low, high) inclusive range for a given difficulty."""
-    # FIX (Bug #4): Hard now uses 1-200 so it is actually harder than Normal (1-100).
-    # Moved from app.py into logic_utils.py with Claude's help.
+def get_range_for_difficulty(difficulty: str) -> tuple[int, int]:
+    """Return the inclusive guessing range for a difficulty level.
+
+    Args:
+        difficulty: One of ``"Easy"``, ``"Normal"``, or ``"Hard"``.
+            Any other value falls back to the Normal range.
+
+    Returns:
+        A ``(low, high)`` tuple of the smallest and largest allowed
+        guesses.
+
+    Examples:
+        >>> get_range_for_difficulty("Easy")
+        (1, 20)
+    """
+    # FIX (Bug #4): Hard now uses 1-200 so it is harder than Normal
+    # (1-100). Moved from app.py into logic_utils.py with Claude's help.
     if difficulty == "Easy":
         return 1, 20
     if difficulty == "Normal":
@@ -14,11 +32,32 @@ def get_range_for_difficulty(difficulty: str):
     return 1, 100
 
 
-def parse_guess(raw, low: int = 1, high: int = 100):
-    """
-    Parse user input into an int guess.
+def parse_guess(
+    raw: str | None, low: int = 1, high: int = 100
+) -> tuple[bool, int | None, str | None]:
+    """Convert the player's raw text input into a validated integer guess.
 
-    Returns: (ok: bool, guess_int: int | None, error_message: str | None)
+    Leading and trailing spaces are ignored. Decimals, non-numbers, empty
+    input, and numbers outside ``low``-``high`` are rejected with a
+    message the UI can show to the player.
+
+    Args:
+        raw: The text the player typed, or ``None`` if nothing was sent.
+        low: The smallest allowed guess (inclusive). Defaults to 1.
+        high: The largest allowed guess (inclusive). Defaults to 100.
+
+    Returns:
+        A tuple ``(ok, value, error)``:
+
+        * ``ok`` -- ``True`` if the input is a valid guess.
+        * ``value`` -- the guess as an ``int``, or ``None`` if invalid.
+        * ``error`` -- a message for the player, or ``None`` if valid.
+
+    Examples:
+        >>> parse_guess(" 7 ", 1, 20)
+        (True, 7, None)
+        >>> parse_guess("101", 1, 20)
+        (False, None, 'Guess must be between 1 and 20.')
     """
     if raw is None:
         return False, None, "Enter a guess."
@@ -30,15 +69,16 @@ def parse_guess(raw, low: int = 1, high: int = 100):
     try:
         value = int(raw)
     except ValueError:
-        # FIX: Decimals like "4.9" used to be silently cut to 4; now the player is told why.
+        # FIX: Decimals like "4.9" used to be silently cut to 4;
+        # now the player is told to enter a whole number.
         try:
             float(raw)
         except ValueError:
             return False, None, "That is not a number."
         return False, None, "Please enter a whole number."
 
-    # FIX (Bug #2): Added a range check so 101, 0, or -20 are rejected on Easy (1-20).
-    # Suggested by Claude; low/high are passed in from app.py based on difficulty.
+    # FIX (Bug #2): Added a range check so 101, 0, or -20 are rejected
+    # on Easy (1-20). Suggested by Claude; low/high come from app.py.
     if value < low or value > high:
         return False, None, f"Guess must be between {low} and {high}."
 
@@ -46,14 +86,25 @@ def parse_guess(raw, low: int = 1, high: int = 100):
 
 
 def check_guess(guess: int, secret: int) -> str:
-    """
-    Compare guess to secret and return the outcome.
+    """Compare a guess to the secret number.
 
-    outcome: "Win", "Too High", or "Too Low"
+    Args:
+        guess: The player's validated guess.
+        secret: The secret number for the current game.
+
+    Returns:
+        ``"Win"`` if the guess matches, ``"Too High"`` if it is above the
+        secret, or ``"Too Low"`` if it is below the secret.
+
+    Examples:
+        >>> check_guess(60, 50)
+        'Too High'
     """
-    # FIX (Bug #6, part 2 of 2): Removed the TypeError/string fallback. Both values are
-    # always ints now, so "9" vs "79" text comparison can no longer happen.
-    # FIX: Returns only the outcome (not a tuple) so the starter tests pass unchanged.
+    # FIX (Bug #6, part 2 of 2): Removed the TypeError/string fallback.
+    # Both values are always ints now, so a text comparison like
+    # "9" > "79" can no longer happen.
+    # FIX: Returns only the outcome (not a tuple) so the starter tests
+    # pass unchanged.
     if guess == secret:
         return "Win"
     if guess > secret:
@@ -62,9 +113,23 @@ def check_guess(guess: int, secret: int) -> str:
 
 
 def get_hint_message(outcome: str) -> str:
-    """Return the hint text shown to the player for a given outcome."""
-    # FIX (Bug #5): Messages were swapped. A guess that is too high now says "Go LOWER".
-    # Claude suggested splitting the message out of check_guess so it is easy to test.
+    """Return the hint text shown to the player for an outcome.
+
+    Args:
+        outcome: The result from :func:`check_guess` (``"Win"``,
+            ``"Too High"``, or ``"Too Low"``).
+
+    Returns:
+        The message to display, or an empty string for an unknown
+        outcome.
+
+    Examples:
+        >>> get_hint_message("Too High")
+        '📉 Go LOWER!'
+    """
+    # FIX (Bug #5): Messages were swapped. A guess that is too high now
+    # says "Go LOWER". Claude suggested splitting the message out of
+    # check_guess so it is easy to test on its own.
     messages = {
         "Win": "🎉 Correct!",
         "Too High": "📉 Go LOWER!",
@@ -74,15 +139,33 @@ def get_hint_message(outcome: str) -> str:
 
 
 def update_score(current_score: int, outcome: str, attempt_number: int) -> int:
-    """Update score based on outcome and attempt number (attempt_number starts at 1)."""
+    """Return the new score after a guess.
+
+    A win earns ``100 - 10 * (attempt_number - 1)`` points, never less
+    than 10. Every wrong guess costs 5 points.
+
+    Args:
+        current_score: The score before this guess.
+        outcome: The result from :func:`check_guess`.
+        attempt_number: Which valid guess this was, starting at 1.
+
+    Returns:
+        The updated score.
+
+    Examples:
+        >>> update_score(0, "Win", 1)
+        100
+        >>> update_score(0, "Too Low", 3)
+        -5
+    """
     if outcome == "Win":
-        # FIX: Uses (attempt_number - 1) so a first-try win is worth 100 points,
-        # since attempts now start counting at 0 (see Bug #1 fix in app.py).
+        # FIX: Uses (attempt_number - 1) so a first-try win is worth 100
+        # points, since attempts now start at 0 (see Bug #1 fix).
         points = 100 - 10 * (attempt_number - 1)
         return current_score + max(points, 10)
 
-    # FIX (Bug #11): Every wrong guess now costs 5 points. Before, "Too High" on even
-    # attempts ADDED 5 points.
+    # FIX (Bug #11): Every wrong guess now costs 5 points. Before,
+    # "Too High" on even attempts ADDED 5 points.
     if outcome in ("Too High", "Too Low"):
         return current_score - 5
 
