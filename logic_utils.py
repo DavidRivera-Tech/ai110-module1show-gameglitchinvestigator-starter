@@ -5,6 +5,11 @@ separate from the Streamlit UI in ``app.py`` so they can be tested with
 pytest without running the app.
 """
 
+import json
+from pathlib import Path
+
+HIGH_SCORES_FILE = "high_scores.json"
+
 
 def get_range_for_difficulty(difficulty: str) -> tuple[int, int]:
     """Return the inclusive guessing range for a difficulty level.
@@ -215,3 +220,75 @@ def update_score(current_score: int, outcome: str, attempt_number: int) -> int:
         return current_score - 5
 
     return current_score
+
+
+def load_high_scores(path: str = HIGH_SCORES_FILE) -> dict[str, int]:
+    """Load saved high scores from a JSON file.
+
+    A missing, empty, or broken file is treated as "no high scores yet"
+    instead of crashing the game. Entries that are not whole numbers are
+    skipped.
+
+    Args:
+        path: Location of the high score file. Defaults to
+            ``high_scores.json`` in the folder the app is run from.
+
+    Returns:
+        A dict mapping difficulty name to best score, for example
+        ``{"Easy": 90, "Normal": 70}``. Empty if nothing is saved.
+    """
+    # FEATURE (Challenge 2): High Score tracker, built with Claude.
+    try:
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    return {
+        str(name): score
+        for name, score in data.items()
+        if isinstance(score, int) and not isinstance(score, bool)
+    }
+
+
+def save_high_scores(
+    scores: dict[str, int], path: str = HIGH_SCORES_FILE
+) -> None:
+    """Save high scores to a JSON file, replacing what was there.
+
+    Args:
+        scores: A dict mapping difficulty name to best score.
+        path: Where to write the file. Defaults to ``high_scores.json``.
+    """
+    Path(path).write_text(json.dumps(scores, indent=2), encoding="utf-8")
+
+
+def update_high_score(
+    scores: dict[str, int], difficulty: str, score: int
+) -> tuple[dict[str, int], bool]:
+    """Record a finished game's score if it beats the saved best.
+
+    The original dict is not changed; a new one is returned.
+
+    Args:
+        scores: Current high scores, by difficulty.
+        difficulty: The difficulty the game was played on.
+        score: The final score of the game that was just won.
+
+    Returns:
+        A tuple ``(new_scores, is_new_record)``. ``is_new_record`` is
+        ``True`` if ``score`` is the first or best score for that
+        difficulty.
+
+    Examples:
+        >>> update_high_score({"Normal": 70}, "Normal", 80)
+        ({'Normal': 80}, True)
+        >>> update_high_score({"Normal": 70}, "Normal", 60)
+        ({'Normal': 70}, False)
+    """
+    best = scores.get(difficulty)
+    if best is not None and score <= best:
+        return dict(scores), False
+    new_scores = dict(scores)
+    new_scores[difficulty] = score
+    return new_scores, True

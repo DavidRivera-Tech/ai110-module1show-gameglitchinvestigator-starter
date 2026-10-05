@@ -41,3 +41,6 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# High scores for my local file
+high_scores.json

@@ -3,7 +3,10 @@ from logic_utils import (
     get_hint_message,
     get_range_for_difficulty,
     get_temperature,
+    load_high_scores,
     parse_guess,
+    save_high_scores,
+    update_high_score,
     update_score,
 )
 
@@ -173,3 +176,44 @@ def test_temperature_scales_with_range():
     # 2 away on Easy (1-20) is about as close as 10 away on Normal
     assert get_temperature(12, 10, 1, 20)[0] == "Warm"
     assert get_temperature(60, 50, 1, 100)[0] == "Warm"
+
+
+# ---------------------------------------------------------------
+# High score tests (Challenge 2: Feature Expansion)
+# ---------------------------------------------------------------
+
+
+def test_first_win_sets_high_score():
+    # No saved score yet, so any win is a new record
+    scores, is_record = update_high_score({}, "Normal", 70)
+    assert scores == {"Normal": 70}
+    assert is_record is True
+
+
+def test_lower_score_does_not_replace_high_score():
+    # A worse (or equal) score keeps the old record
+    scores, is_record = update_high_score({"Normal": 70}, "Normal", 60)
+    assert scores == {"Normal": 70}
+    assert is_record is False
+    assert update_high_score({"Normal": 70}, "Normal", 70)[1] is False
+
+
+def test_high_scores_are_tracked_per_difficulty():
+    # Beating Easy must not touch the Normal record
+    scores, _ = update_high_score({"Normal": 70}, "Easy", 90)
+    assert scores == {"Normal": 70, "Easy": 90}
+
+
+def test_high_scores_save_and_load_round_trip(tmp_path):
+    # Scores written to the file come back the same
+    path = tmp_path / "high_scores.json"
+    save_high_scores({"Easy": 90, "Hard": 40}, str(path))
+    assert load_high_scores(str(path)) == {"Easy": 90, "Hard": 40}
+
+
+def test_missing_or_broken_high_score_file_is_empty(tmp_path):
+    # No file yet, or a corrupted file, should not crash the game
+    assert load_high_scores(str(tmp_path / "nope.json")) == {}
+    broken = tmp_path / "broken.json"
+    broken.write_text("{not valid json", encoding="utf-8")
+    assert load_high_scores(str(broken)) == {}

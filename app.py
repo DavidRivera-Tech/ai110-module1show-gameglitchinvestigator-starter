@@ -1,4 +1,5 @@
 import random
+from pathlib import Path
 
 import streamlit as st
 
@@ -9,9 +10,16 @@ from logic_utils import (
     get_hint_message,
     get_range_for_difficulty,
     get_temperature,
+    load_high_scores,
     parse_guess,
+    save_high_scores,
+    update_high_score,
     update_score,
 )
+
+# FEATURE (Challenge 2): High scores are saved next to app.py, so they
+# survive closing and reopening the game.
+HIGH_SCORES_PATH = str(Path(__file__).with_name("high_scores.json"))
 
 
 def start_new_game(low: int, high: int, difficulty: str) -> None:
@@ -62,6 +70,25 @@ low, high = get_range_for_difficulty(difficulty)
 
 st.sidebar.caption(f"Range: {low} to {high}")
 st.sidebar.caption(f"Attempts allowed: {attempt_limit}")
+
+# FEATURE (Challenge 2): Reserve a sidebar spot for the high scores and
+# fill it in at the END, so a new record shows up right away (same idea
+# as the Bug #10 fix).
+high_score_box = st.sidebar.empty()
+
+# FEATURE: Explain the scoring rules (from update_score in logic_utils.py)
+# so players know why their score goes up or down.
+with st.sidebar.expander("ℹ️ How scoring works"):
+    st.markdown(
+        "Your score has two parts:\n\n"
+        "1. ❌ **Each wrong guess:** -5 points\n"
+        "2. 🎯 **Win bonus:** 100 if you win on guess 1, 90 on guess 2, "
+        "80 on guess 3, and so on (never less than 10)\n\n"
+        "**Example:** miss, miss, then win on guess 3 "
+        "→ -5 - 5 + 80 = **70**\n\n"
+        "⚠️ Invalid input (like `abc`) costs nothing and doesn't use "
+        "an attempt. 🏆 Only wins count toward your high score."
+    )
 
 # FIX (Bug #9): Start a fresh game on first load AND whenever the
 # difficulty changes, so the secret is always inside the selected range.
@@ -156,6 +183,19 @@ elif submit:
                 f"You won! The secret was {st.session_state.secret}. "
                 f"Final score: {st.session_state.score}"
             )
+            # FEATURE (Challenge 2): Save the score if it beats the best
+            # score for this difficulty. Only wins count.
+            high_scores, is_record = update_high_score(
+                load_high_scores(HIGH_SCORES_PATH),
+                difficulty,
+                st.session_state.score,
+            )
+            if is_record:
+                try:
+                    save_high_scores(high_scores, HIGH_SCORES_PATH)
+                    st.success(f"🏆 New high score for {difficulty}!")
+                except OSError:
+                    st.warning("Couldn't save the high score file.")
         elif st.session_state.attempts >= attempt_limit:
             st.session_state.status = "lost"
             st.error(
@@ -170,6 +210,14 @@ info_box.info(
     f"Guess a number between {low} and {high}. "
     f"Attempts left: {attempt_limit - st.session_state.attempts}"
 )
+
+# FEATURE (Challenge 2): Show the best score for every difficulty.
+saved_scores = load_high_scores(HIGH_SCORES_PATH)
+with high_score_box.container():
+    st.subheader("🏆 High Scores")
+    for level in ["Easy", "Normal", "Hard"]:
+        best = saved_scores.get(level)
+        st.caption(f"{level}: {best if best is not None else '—'}")
 
 # FEATURE (Challenge 4): Session summary table of every valid guess in
 # this game, so the player can see how they homed in on the secret.

@@ -8,17 +8,28 @@
 
 > Document your experience using an AI agent (e.g., Cursor Agent, Claude, Copilot) to make multi-step changes autonomously.
 
+AI agent used: **Claude**, working agentically with its own code workspace: it edited the files, ran flake8 and pytest, and played the game with Streamlit's testing tool before handing the files to me.
+
 **What task did you give the agent?**
 
-<!-- Describe the goal you asked the agent to accomplish -->
+Add a "High Score" tracker: when I win, save my score to a file if it beats the best score for that difficulty, show "New high score!" when that happens, show the best score for Easy, Normal, and Hard in the sidebar, and keep the scores after the game is closed and reopened. Keep the core game logic working and add tests.
 
 **What did the agent do?**
 
-<!-- List the steps the agent took (files edited, commands run, etc.) -->
+Files modified:
+- `logic_utils.py`: added `load_high_scores()`, `save_high_scores()`, and `update_high_score()` with docstrings. Loading treats a missing or broken file as "no scores yet" instead of crashing.
+- `app.py`: on a win, checks and saves the high score and shows "🏆 New high score for <difficulty>!"; added a "🏆 High Scores" list to the sidebar. Scores are saved to `high_scores.json` next to `app.py`.
+- `tests/test_game_logic.py`: added 5 tests (first win sets a record, lower score doesn't replace it, scores are tracked per difficulty, save/load round trip, missing or broken file returns no scores).
+
+Steps the agent took:
+1. Wrote the three high score functions in `logic_utils.py` and ran flake8 and the docstring examples.
+2. Noticed that the sidebar is drawn before the guess is processed (the same problem as Bug #10), so a new record wouldn't appear until the next click. It used an `st.sidebar.empty()` placeholder filled in at the end of the script instead.
+3. Wired the functions into `app.py` and added the 5 tests (27 total, all passing, flake8 clean).
+4. Simulated games with Streamlit's testing tool: won on the first try (score 100, record saved and shown immediately), restarted the app (score still there), won with a lower score (record unchanged), and lost a game on Easy (no record created). The first simulation run timed out after 3 seconds; the agent recognized this was the testing tool's default time limit, not a bug in the game, and reran it with a longer limit.
 
 **What did you have to verify or fix manually?**
 
-<!-- Describe anything the agent got wrong or that required human review -->
+I replaced my files with the agent's versions and checked everything myself instead of trusting the agent's report: I ran `python -m pytest` (27 passed) and flake8 (no warnings), then played the game. I won a game and saw "🏆 New high score for Normal!" and the sidebar update to my score of 70. I closed the game, restarted it, and confirmed the high score was still there. I also added `high_scores.json` to `.gitignore` so my personal test scores aren't committed to GitHub. While testing, I noticed the game never explained how points work, so I asked the agent to add a "How scoring works" panel to the sidebar. Its first version still confused me (I couldn't tell how a 3rd-guess win added up), so I asked it to clarify, and it rewrote the panel to show the score's two parts with a worked example: miss, miss, win on guess 3 = -5 - 5 + 80 = 70. I confirmed that matched my real game earlier, where I guessed 100, 50, then 95 and finished with 70.
 
 ---
 
@@ -47,7 +58,7 @@ I reviewed each generated test against my Bug Reproduction Log in `reflection.md
 | Range boundaries (`1`, `20`, `0`, `21` on Easy) | Prompt above | `test_boundary_values` | ✅ Yes | Checks the exact edges: 1 and 20 allowed, 0 and 21 rejected, which catches off-by-one mistakes. |
 | Very late win (attempt 20) | Prompt above | `test_win_score_never_below_10` | ✅ Yes | A late win should still give the minimum 10 points, not zero or negative. |
 
-**Result:** all tests pass. Originally 19 (3 starter, 9 bug-fix, 7 edge-case); 3 hot/cold tests were added later for Challenge 4, for 22 total. Full output is in `README.md` and `test_results.txt`.
+**Result:** all tests pass. Originally 19 (3 starter, 9 bug-fix, 7 edge-case); 3 hot/cold tests were added for Challenge 4 and 5 high score tests for Challenge 2, for 27 total. Full output is in `README.md` and `test_results.txt`.
 
 ---
 

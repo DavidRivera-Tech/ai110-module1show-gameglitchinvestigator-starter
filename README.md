@@ -78,42 +78,53 @@ A sample game on the fixed version (Normal difficulty, secret shown in Developer
 ## 🧪 Test Results
 ```
 $ python -m pytest -v
-collected 22 items
+collected 27 items
 
-tests/test_game_logic.py::test_winning_guess PASSED                      [  4%]
-tests/test_game_logic.py::test_guess_too_high PASSED                     [  9%]
-tests/test_game_logic.py::test_guess_too_low PASSED                      [ 13%]
-tests/test_game_logic.py::test_too_high_hint_says_go_lower PASSED        [ 18%]
-tests/test_game_logic.py::test_too_low_hint_says_go_higher PASSED        [ 22%]
-tests/test_game_logic.py::test_single_digit_guess_compared_as_number PASSED [ 27%]
-tests/test_game_logic.py::test_same_guess_gives_same_result_every_time PASSED [ 31%]
-tests/test_game_logic.py::test_out_of_range_guess_rejected_on_easy PASSED [ 36%]
-tests/test_game_logic.py::test_non_numeric_input_rejected PASSED         [ 40%]
-tests/test_game_logic.py::test_wrong_guess_never_adds_points PASSED      [ 45%]
-tests/test_game_logic.py::test_first_try_win_scores_100 PASSED           [ 50%]
-tests/test_game_logic.py::test_hard_range_bigger_than_normal PASSED      [ 54%]
-tests/test_game_logic.py::test_negative_number_rejected PASSED           [ 59%]
-tests/test_game_logic.py::test_decimal_rejected_not_truncated PASSED     [ 63%]
-tests/test_game_logic.py::test_extremely_large_number_rejected PASSED    [ 68%]
-tests/test_game_logic.py::test_empty_input_rejected PASSED               [ 72%]
-tests/test_game_logic.py::test_whitespace_around_number_accepted PASSED  [ 77%]
-tests/test_game_logic.py::test_boundary_values PASSED                    [ 81%]
-tests/test_game_logic.py::test_win_score_never_below_10 PASSED           [ 86%]
-tests/test_game_logic.py::test_temperature_correct_guess PASSED          [ 90%]
-tests/test_game_logic.py::test_temperature_ratings_from_hot_to_cold PASSED [ 95%]
-tests/test_game_logic.py::test_temperature_scales_with_range PASSED      [100%]
+tests/test_game_logic.py::test_winning_guess PASSED                      [  3%]
+tests/test_game_logic.py::test_guess_too_high PASSED                     [  7%]
+tests/test_game_logic.py::test_guess_too_low PASSED                      [ 11%]
+tests/test_game_logic.py::test_too_high_hint_says_go_lower PASSED        [ 14%]
+tests/test_game_logic.py::test_too_low_hint_says_go_higher PASSED        [ 18%]
+tests/test_game_logic.py::test_single_digit_guess_compared_as_number PASSED [ 22%]
+tests/test_game_logic.py::test_same_guess_gives_same_result_every_time PASSED [ 25%]
+tests/test_game_logic.py::test_out_of_range_guess_rejected_on_easy PASSED [ 29%]
+tests/test_game_logic.py::test_non_numeric_input_rejected PASSED         [ 33%]
+tests/test_game_logic.py::test_wrong_guess_never_adds_points PASSED      [ 37%]
+tests/test_game_logic.py::test_first_try_win_scores_100 PASSED           [ 40%]
+tests/test_game_logic.py::test_hard_range_bigger_than_normal PASSED      [ 44%]
+tests/test_game_logic.py::test_negative_number_rejected PASSED           [ 48%]
+tests/test_game_logic.py::test_decimal_rejected_not_truncated PASSED     [ 51%]
+tests/test_game_logic.py::test_extremely_large_number_rejected PASSED    [ 55%]
+tests/test_game_logic.py::test_empty_input_rejected PASSED               [ 59%]
+tests/test_game_logic.py::test_whitespace_around_number_accepted PASSED  [ 62%]
+tests/test_game_logic.py::test_boundary_values PASSED                    [ 66%]
+tests/test_game_logic.py::test_win_score_never_below_10 PASSED           [ 70%]
+tests/test_game_logic.py::test_temperature_correct_guess PASSED          [ 74%]
+tests/test_game_logic.py::test_temperature_ratings_from_hot_to_cold PASSED [ 77%]
+tests/test_game_logic.py::test_temperature_scales_with_range PASSED      [ 81%]
+tests/test_game_logic.py::test_first_win_sets_high_score PASSED          [ 85%]
+tests/test_game_logic.py::test_lower_score_does_not_replace_high_score PASSED [ 88%]
+tests/test_game_logic.py::test_high_scores_are_tracked_per_difficulty PASSED [ 92%]
+tests/test_game_logic.py::test_high_scores_save_and_load_round_trip PASSED [ 96%]
+tests/test_game_logic.py::test_missing_or_broken_high_score_file_is_empty PASSED [100%]
 
-============================= 22 passed in 0.07s ==============================
+============================= 27 passed in 0.09s ==============================
 ```
 
 The full output is also saved in `test_results.txt`.
 
 ## 🚀 Stretch Features
 - [x] **Challenge 1: Advanced Edge-Case Testing.** Added edge-case tests for negative numbers, decimals, extremely large numbers, empty input, extra spaces, and range boundaries (see the "Edge-case tests" section of `tests/test_game_logic.py`). Prompts and reasons for each edge case are in `ai_interactions.md`.
+
+- [x] **Challenge 2: Feature Expansion (High Score tracker).** Built with Claude working as an agent. When you win, your score is saved to `high_scores.json` if it beats the best for that difficulty, the game shows "🏆 New high score!", and the sidebar always lists the best score for Easy, Normal, and Hard, even after the game is restarted. New functions: `load_high_scores()`, `save_high_scores()`, and `update_high_score()` in `logic_utils.py`, plus 5 tests. Full Agent Workflow in `ai_interactions.md`. I also added a "ℹ️ How scoring works" panel to the sidebar that explains the two parts of the score with a worked example.
+
+- [x] **Challenge 3: Professional Documentation and Linting.** Every function in `logic_utils.py` has a professional docstring with Args, Returns, and Examples. I ran `flake8` (a PEP 8 checker) on `app.py`, `logic_utils.py`, and the tests: it found 46 warnings before (saved in `lint_before.txt`) and 0 after (saved in `lint_after.txt`). The prompt, linting output, and the changes applied are in `ai_interactions.md`.
+
 - [x] **Challenge 4: Enhanced Game UI.** Added three UI improvements without changing the core game rules:
   - **Hot/Cold meter:** a new function `get_temperature()` in `logic_utils.py` rates each guess as 🔥 Hot, ☀️ Warm, 🌥️ Cool, or 🧊 Cold based on how close it is, measured as a fraction of the difficulty's range (so "close" on Easy feels the same as "close" on Hard). A correct guess shows 🎯 Correct.
   - **Color-coded hints:** in `app.py`, the hint is now shown with `st.markdown` in a color that matches the temperature (red, orange, gray, blue, or green for a win), followed by "Go HIGHER" / "Go LOWER." This replaced the plain yellow `st.warning` box.
   - **Session summary table:** `app.py` keeps a `guess_log` in session state (reset by `start_new_game()`) and shows a "📊 Session Summary" table with each guess's attempt number, guess, hint, temperature, and score.
-  - Added 3 tests for `get_temperature()` in `tests/test_game_logic.py` (22 tests total, all passing).
-
+  - Added 3 tests for `get_temperature()` in `tests/test_game_logic.py`.
   ![Enhanced UI with hot/cold hints and summary table](enhanced-ui.png)
+
+- [x] **Challenge 5: AI Model Comparison.** I gave ChatGPT and Claude the same prompt to fix the backwards hints and string comparison bugs (#5 and #6) in the original `check_guess`. Claude's fix was more Pythonic (it handled bad input instead of crashing), while ChatGPT's explanation was easier to follow. The full comparison and both models' code are in `ai_interactions.md`.
