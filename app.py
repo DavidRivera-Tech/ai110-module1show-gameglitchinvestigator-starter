@@ -8,6 +8,7 @@ from logic_utils import (
     check_guess,
     get_hint_message,
     get_range_for_difficulty,
+    get_temperature,
     parse_guess,
     update_score,
 )
@@ -31,6 +32,9 @@ def start_new_game(low: int, high: int, difficulty: str) -> None:
     st.session_state.score = 0
     st.session_state.status = "playing"
     st.session_state.history = []
+    # FEATURE (Challenge 4): One row per valid guess for the session
+    # summary table.
+    st.session_state.guess_log = []
     st.session_state.difficulty = difficulty
 
 
@@ -62,7 +66,10 @@ st.sidebar.caption(f"Attempts allowed: {attempt_limit}")
 # FIX (Bug #9): Start a fresh game on first load AND whenever the
 # difficulty changes, so the secret is always inside the selected range.
 difficulty_changed = st.session_state.get("difficulty") != difficulty
-if "secret" not in st.session_state or difficulty_changed:
+missing_state = "secret" not in st.session_state or (
+    "guess_log" not in st.session_state
+)
+if missing_state or difficulty_changed:
     start_new_game(low, high, difficulty)
 
 st.subheader("Make a guess")
@@ -112,17 +119,34 @@ elif submit:
         # secret into a string on even attempts. The secret is always
         # compared as a number now.
         outcome = check_guess(guess_int, st.session_state.secret)
+        hint = get_hint_message(outcome)
+        label, emoji, color = get_temperature(
+            guess_int, st.session_state.secret, low, high
+        )
 
         if show_hint:
             # FIX (Bug #5): Hint text now comes from get_hint_message(),
             # where the swapped "Go HIGHER"/"Go LOWER" messages were
             # corrected.
-            st.warning(get_hint_message(outcome))
+            # FEATURE (Challenge 4): The hint is color-coded by how close
+            # the guess was, with a hot/cold emoji.
+            direction = "" if outcome == "Win" else f" {hint}"
+            st.markdown(f"### :{color}[{emoji} {label}!]{direction}")
 
         st.session_state.score = update_score(
             current_score=st.session_state.score,
             outcome=outcome,
             attempt_number=st.session_state.attempts,
+        )
+
+        st.session_state.guess_log.append(
+            {
+                "Attempt": st.session_state.attempts,
+                "Guess": guess_int,
+                "Hint": hint,
+                "Temperature": f"{emoji} {label}",
+                "Score": st.session_state.score,
+            }
         )
 
         if outcome == "Win":
@@ -146,6 +170,12 @@ info_box.info(
     f"Guess a number between {low} and {high}. "
     f"Attempts left: {attempt_limit - st.session_state.attempts}"
 )
+
+# FEATURE (Challenge 4): Session summary table of every valid guess in
+# this game, so the player can see how they homed in on the secret.
+if st.session_state.guess_log:
+    st.subheader("📊 Session Summary")
+    st.dataframe(st.session_state.guess_log, hide_index=True)
 
 # FIX (Bug #10): Debug panel moved to the end so it shows the state AFTER
 # the latest guess.

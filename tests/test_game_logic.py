@@ -2,6 +2,7 @@ from logic_utils import (
     check_guess,
     get_hint_message,
     get_range_for_difficulty,
+    get_temperature,
     parse_guess,
     update_score,
 )
@@ -148,3 +149,27 @@ def test_win_score_never_below_10():
     # Edge case: winning on a very late attempt still gives at least
     # 10 points
     assert update_score(0, "Win", 20) == 10
+
+
+# ---------------------------------------------------------------
+# Hot/cold meter tests (Challenge 4: Enhanced Game UI)
+# ---------------------------------------------------------------
+
+
+def test_temperature_correct_guess():
+    # A correct guess is always "Correct", not "Hot"
+    assert get_temperature(50, 50, 1, 100)[0] == "Correct"
+
+
+def test_temperature_ratings_from_hot_to_cold():
+    # Closer guesses get warmer ratings on Normal (1-100)
+    assert get_temperature(52, 50, 1, 100)[0] == "Hot"
+    assert get_temperature(60, 50, 1, 100)[0] == "Warm"
+    assert get_temperature(75, 50, 1, 100)[0] == "Cool"
+    assert get_temperature(5, 95, 1, 100)[0] == "Cold"
+
+
+def test_temperature_scales_with_range():
+    # 2 away on Easy (1-20) is about as close as 10 away on Normal
+    assert get_temperature(12, 10, 1, 20)[0] == "Warm"
+    assert get_temperature(60, 50, 1, 100)[0] == "Warm"

@@ -138,6 +138,51 @@ def get_hint_message(outcome: str) -> str:
     return messages.get(outcome, "")
 
 
+def get_temperature(
+    guess: int, secret: int, low: int, high: int
+) -> tuple[str, str, str]:
+    """Describe how close a guess is to the secret as a hot/cold rating.
+
+    Closeness is measured as a fraction of the difficulty's range, so a
+    guess 5 away "feels" the same on Easy (1-20) as a guess 25 away on
+    Normal (1-100).
+
+    Args:
+        guess: The player's validated guess.
+        secret: The secret number for the current game.
+        low: The smallest number in the current range.
+        high: The largest number in the current range.
+
+    Returns:
+        A tuple ``(label, emoji, color)``. ``label`` is one of
+        ``"Correct"``, ``"Hot"``, ``"Warm"``, ``"Cool"``, or ``"Cold"``.
+        ``color`` is a Streamlit markdown color name used by the UI.
+
+    Examples:
+        >>> get_temperature(50, 50, 1, 100)
+        ('Correct', '🎯', 'green')
+        >>> get_temperature(52, 50, 1, 100)
+        ('Hot', '🔥', 'red')
+        >>> get_temperature(5, 95, 1, 100)
+        ('Cold', '🧊', 'blue')
+    """
+    # FEATURE (Challenge 4): Hot/cold meter added with Claude. Pure logic
+    # only, so it can be unit tested without the Streamlit UI.
+    if guess == secret:
+        return "Correct", "🎯", "green"
+
+    span = max(high - low, 1)
+    closeness = abs(guess - secret) / span
+
+    if closeness <= 0.05:
+        return "Hot", "🔥", "red"
+    if closeness <= 0.15:
+        return "Warm", "☀️", "orange"
+    if closeness <= 0.35:
+        return "Cool", "🌥️", "gray"
+    return "Cold", "🧊", "blue"
+
+
 def update_score(current_score: int, outcome: str, attempt_number: int) -> int:
     """Return the new score after a guess.
 

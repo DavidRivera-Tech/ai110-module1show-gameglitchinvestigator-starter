@@ -47,7 +47,7 @@ I reviewed each generated test against my Bug Reproduction Log in `reflection.md
 | Range boundaries (`1`, `20`, `0`, `21` on Easy) | Prompt above | `test_boundary_values` | ✅ Yes | Checks the exact edges: 1 and 20 allowed, 0 and 21 rejected, which catches off-by-one mistakes. |
 | Very late win (attempt 20) | Prompt above | `test_win_score_never_below_10` | ✅ Yes | A late win should still give the minimum 10 points, not zero or negative. |
 
-**Result:** all 19 tests pass (3 starter, 9 bug-fix, 7 edge-case). Full output is in `README.md` and `test_results.txt`.
+**Result:** all tests pass. Originally 19 (3 starter, 9 bug-fix, 7 edge-case); 3 hot/cold tests were added later for Challenge 4, for 22 total. Full output is in `README.md` and `test_results.txt`.
 
 ---
 
@@ -88,7 +88,7 @@ Total: 46 warnings
 | E501 (line too long) | Lines over 79 characters | Split long `# FIX:` comments and code lines across multiple lines | ✅ Yes |
 | E302 (expected 2 blank lines) | Functions need 2 blank lines between them | Added 2 blank lines between every test function | ✅ Yes |
 | W292 (no newline at end of file) | Files should end with a newline | Added a final newline to `app.py` and the test file | ✅ Yes |
-| Docstrings | `logic_utils.py` had short or missing docstrings | Added full docstrings with Args, Returns, and Examples to all 5 functions | ✅ Yes |
+| Docstrings | `logic_utils.py` had short or missing docstrings | Added full docstrings with Args, Returns, and Examples to all 5 functions (get_temperature, added later for Challenge 4, also has one) | ✅ Yes |
 | Import order | Imports weren't grouped | Sorted imports alphabetically and separated Python's built-in `random` from third-party `streamlit` | ✅ Yes |
 
 Naming was already PEP 8 compliant (functions and variables use `snake_case`), so no renaming was needed.
