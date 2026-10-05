@@ -103,15 +103,49 @@ Naming was already PEP 8 compliant (functions and variables use `snake_case`), s
 
 **Task given to both models:**
 
-<!-- Describe what you asked each model to do -->
+I gave ChatGPT and Claude the exact same prompt, each in a fresh chat with no other context: the original buggy `check_guess` function from the starter code, plus a description of two bugs (Bug #5: the "Go HIGHER"/"Go LOWER" hints were backwards, and Bug #6: the secret sometimes arrived as a string, causing wrong hints). I asked each model to fix the function and explain why it was broken.
 
 | | Model A | Model B |
 |-|---------|---------|
-| **Model name** | | |
-| **Response summary** | | |
-| **More Pythonic?** | | |
-| **Clearer explanation?** | | |
+| **Model name** | ChatGPT | Claude |
+| **Response summary** | Found both bugs. Fixed them by converting `guess` and `secret` to `int` at the top of the function, then swapping the hint messages. Explained the string bug step by step: `9 > "10"` raises a TypeError, the fallback compares `"9" > "10"`, and that is True because Python compares the first characters ("9" vs "1"). | Found both bugs. Same core fix (convert both to `int` up front), but wrapped the conversion in `try/except (TypeError, ValueError)` and returns `"Invalid"` for input like `"abc"`. Also explained why `42 == "42"` is False, and warned that the new `"Invalid"` outcome might need handling by the caller. |
+| **More Pythonic?** | Concise, but uses `else` after a `return` and would crash with a `ValueError` on non-numeric input. | ✅ More Pythonic: uses early returns with no unnecessary `else`, catches specific exceptions instead of crashing, and removes the duplicated fallback so there is one code path. |
+| **Clearer explanation?** | ✅ Easier to follow: it walks through each value one step at a time with small examples, and ends with a simple lesson ("normalize the data before making decisions with it"). | Also clear and slightly more complete, but denser to read. |
 
 **Which did you prefer and why?**
 
-<!-- Your conclusion -->
+I preferred Claude's fix because it handles bad input instead of crashing and is written in a cleaner, more Pythonic way. I preferred ChatGPT's explanation because breaking the string comparison down step by step made the bug easier to understand. Neither fix was exactly right for my project, though: both still returned a tuple like `("Win", "🎉 Correct!")`, which would fail the starter tests that expect just `"Win"`. In my final code, `check_guess` returns only the outcome, the hint text lives in a separate `get_hint_message` function, and input validation happens earlier in `parse_guess`, so I combined ideas from both instead of copying either one.
+
+**Each model's fixed code (copied from their responses):**
+
+ChatGPT:
+```python
+def check_guess(guess, secret):
+    guess = int(guess)
+    secret = int(secret)
+
+    if guess == secret:
+        return "Win", "🎉 Correct!"
+
+    if guess > secret:
+        return "Too High", "📉 Go LOWER!"
+    else:
+        return "Too Low", "📈 Go HIGHER!"
+```
+
+Claude:
+```python
+def check_guess(guess, secret):
+    # Normalize: the secret sometimes arrives as a string, so coerce both to int.
+    try:
+        guess = int(guess)
+        secret = int(secret)
+    except (TypeError, ValueError):
+        return "Invalid", "⚠️ Please enter a valid number."
+
+    if guess == secret:
+        return "Win", "🎉 Correct!"
+    if guess > secret:
+        return "Too High", "📉 Go LOWER!"
+    return "Too Low", "📈 Go HIGHER!"
+```
